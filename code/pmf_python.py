@@ -31,7 +31,7 @@ def boundbox_neighbours(point, pointcloud, window_size):
 
 
 
-with open('../dataset/odm_mesh_small_no_outliers.xyz', 'rb') as csvfile:
+with open('../dataset/odm_prueba.xyz', 'rb') as csvfile:
 	csvreader = csv.reader(csvfile, delimiter=' ')
 	pointcloud = [map(float, row) for row in csvreader]
 
@@ -50,7 +50,7 @@ height_thresholds = []
 slope = 1.0
 cell_size = 1.0
 base = 2.0
-max_distance = 50
+max_distance = 1
 initial_distance = 0.5
 max_window_size = 20
 window_type = 'linear'
@@ -110,7 +110,7 @@ for window, thres in zip(windows, height_thresholds):
 
 
 	for point_idx in range(np_pointcloud.shape[0]):
-		if (np_pointcloud[point_idx,-1] - pointcloud_copy[point_idx,-1]) > thres:
+		if ( abs(np_pointcloud[point_idx,-1] - pointcloud_copy[point_idx,-1])) > thres:
 			flags[point_idx] = 1
 			
 
