@@ -31,7 +31,7 @@ def boundbox_neighbours(point, pointcloud, window_size):
 
 
 
-with open('odm_mesh_prueba.xyz', 'rb') as csvfile:
+with open('../dataset/odm_mesh_small.xyz', 'rb') as csvfile:
 	csvreader = csv.reader(csvfile, delimiter=' ')
 	pointcloud = [map(float, row) for row in csvreader]
 
