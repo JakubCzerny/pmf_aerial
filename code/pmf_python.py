@@ -50,7 +50,7 @@ height_thresholds = []
 slope = 1.0
 cell_size = 1.0
 base = 2.0
-max_distance = 10
+max_distance = 50
 initial_distance = 0.5
 max_window_size = 20
 window_type = 'linear'
@@ -87,8 +87,9 @@ for thresh in height_thresholds:
 
 flags = np.zeros(np_pointcloud.shape[0])
 
+pointcloud_copy = np.copy(np_pointcloud)
+
 for window, thres in zip(windows, height_thresholds):
-	pointcloud_copy = np.copy(np_pointcloud)
 
 	# window = windows[-1]
 	# thresh = height_thresholds[-1]
@@ -101,16 +102,25 @@ for window, thres in zip(windows, height_thresholds):
 
 		if neighbours:
 			# Open operator (erosion + dilation)
-			Z = erosion(pointcloud_copy, neighbours, point_idx)
-			Z = dilation(Z, neighbours, point_idx)
+			pointcloud_copy = erosion(pointcloud_copy, neighbours, point_idx)
+			pointcloud_copy = dilation(pointcloud_copy, neighbours, point_idx)
+			# pointcloud_copy = Z
+
 
 
 
 	for point_idx in range(np_pointcloud.shape[0]):
-		if (np_pointcloud[point_idx,-1] - Z[point_idx,-1]) > thres:
+		if (np_pointcloud[point_idx,-1] - pointcloud_copy[point_idx,-1]) > thres:
 			flags[point_idx] = 1
 			
 
 
+with open('../dataset/pcloud1.xyz', 'wb') as csvfile:
+	csvwriter = csv.writer(csvfile, delimiter=' ')
+	csvwriter.writerows(np_pointcloud[np.where(flags == 1)[0], :].tolist())
+
+with open('../dataset/pcloud2.xyz', 'wb') as csvfile:
+	csvwriter = csv.writer(csvfile, delimiter=' ')
+	csvwriter.writerows(np_pointcloud[np.where(flags == 0)[0], :].tolist())
 
 
