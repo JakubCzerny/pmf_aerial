@@ -2,12 +2,13 @@ import numpy as np
 import csv
 import sys
 
-
+#Erosion function
 def erosion(pointcloud, neighbours, point_idx):
 	z_vals = [pointcloud[neighbour,-1] for neighbour in neighbours]
 	pointcloud[point_idx, -1] = min(z_vals)
 	return pointcloud
 
+#Dilation function
 def dilation(pointcloud, neighbours, point_idx):
 	z_vals = [pointcloud[neighbour,-1] for neighbour in neighbours]
 	pointcloud[point_idx, -1] = max(z_vals)
@@ -16,6 +17,7 @@ def dilation(pointcloud, neighbours, point_idx):
 def morpho_filter():
 	pass
 
+#Find neighbours for a given point and window size  
 def boundbox_neighbours(point, pointcloud, window_size):
 
 	minx = point[0] - window_size/2.0
@@ -30,17 +32,17 @@ def boundbox_neighbours(point, pointcloud, window_size):
 	return neighbour_inds
 
 
-
-with open('../dataset/odm_prueba.xyz', 'rb') as csvfile:
+#Load .xyz file where point cloud is stored
+with open('../dataset/odm_mesh_small_no_outliers.xyz', 'rb') as csvfile:
 	csvreader = csv.reader(csvfile, delimiter=' ')
 	pointcloud = [map(float, row) for row in csvreader]
 
-print pointcloud
+#print pointcloud
 print 'size of pointcloud: ', len(pointcloud)
 
 np_pointcloud = np.array(pointcloud)
-print np_pointcloud
-print 'type of variable: ', type(np_pointcloud)
+#print np_pointcloud
+#print 'type of variable: ', type(np_pointcloud)
 
 # Build different windows and height thresholds
 windows = []
@@ -50,13 +52,14 @@ height_thresholds = []
 slope = 1.0
 cell_size = 1.0
 base = 2.0
-max_distance = 1
-initial_distance = 0.5
+max_distance = 80
+initial_distance = 13
 max_window_size = 20
 window_type = 'linear'
 
 window_size = 0.0
 i = 0
+
 while window_size < max_window_size:
 	# Create different windows
 	if window_type == 'linear':
@@ -87,6 +90,7 @@ for thresh in height_thresholds:
 
 flags = np.zeros(np_pointcloud.shape[0])
 
+#Create a copy of the original file
 pointcloud_copy = np.copy(np_pointcloud)
 
 for window, thres in zip(windows, height_thresholds):
@@ -114,11 +118,12 @@ for window, thres in zip(windows, height_thresholds):
 			flags[point_idx] = 1
 			
 
-
+#Create file with non ground points
 with open('../dataset/pcloud1.xyz', 'wb') as csvfile:
 	csvwriter = csv.writer(csvfile, delimiter=' ')
 	csvwriter.writerows(np_pointcloud[np.where(flags == 1)[0], :].tolist())
 
+#Create file with ground points
 with open('../dataset/pcloud2.xyz', 'wb') as csvfile:
 	csvwriter = csv.writer(csvfile, delimiter=' ')
 	csvwriter.writerows(np_pointcloud[np.where(flags == 0)[0], :].tolist())
