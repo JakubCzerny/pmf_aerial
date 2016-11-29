@@ -49,11 +49,13 @@ windows = []
 height_thresholds = []
 
 # Default parameters
-slope = 1.0
+slope = 2.0
 cell_size = 1.0
 base = 2.0
-max_distance = 80
-initial_distance = 13
+
+max_distance = 100
+initial_distance = 10
+
 max_window_size = 20
 window_type = 'linear'
 
@@ -95,12 +97,14 @@ pointcloud_copy = np.copy(np_pointcloud)
 
 for window, thres in zip(windows, height_thresholds):
 
+	print 'window: ', window, ' threshold: ', thres
+
 	# window = windows[-1]
 	# thresh = height_thresholds[-1]
 
 
 	for point_idx, point in enumerate(pointcloud_copy):
-		print 'Point processed: ', point_idx
+		# print 'Point processed: ', point_idx
 
 		neighbours = boundbox_neighbours(point, pointcloud_copy, window)
 
