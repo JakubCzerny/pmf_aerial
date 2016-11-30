@@ -1,6 +1,7 @@
 import numpy as np
 import csv
 import sys
+from scipy.spatial import KDTree
 
 #Erosion function
 def erosion(pointcloud, neighbours, point_idx):
@@ -91,6 +92,72 @@ for thresh in height_thresholds:
 
 
 flags = np.zeros(np_pointcloud.shape[0])
+
+print np_pointcloud.shape
+m = np.floor((np.max(np_pointcloud[:,1]) - np.min(np_pointcloud[:,1]))/cell_size) + 1
+n = np.floor((np.max(np_pointcloud[:,0]) - np.min(np_pointcloud[:,0]))/cell_size) + 1
+
+
+A = np.zeros((m,n,3))
+print 'm, n: ', m, n
+
+# Creating kdtree
+print "Creating kdtree"
+kdt = KDTree(np_pointcloud[:,0:2])
+print kdt.data
+print 'shape of kdtree'
+print kdt.data.shape
+
+print 'Shape of pointcloud'
+print np_pointcloud.shape
+
+min_x_value = np.min(np_pointcloud[:,0])
+min_y_value = np.min(np_pointcloud[:,1])
+
+print 'min values: '
+print min_x_value, min_y_value
+
+for row_grid_num in range(int(m)):
+	print row_grid_num
+	for col_grid_num in range(int(n)):
+		min_x = min_x_value + row_grid_num*cell_size
+		max_x = min_x + (row_grid_num+1)*cell_size
+		min_y = min_y_value + col_grid_num*cell_size
+		max_y = min_y + (col_grid_num+1)*cell_size
+
+
+		within_x = np.where(np.logical_and(np_pointcloud[:,0]>=min_x, np_pointcloud[:,0]<=max_x))
+		within_y = np.where(np.logical_and(np_pointcloud[:,1]>=min_y, np_pointcloud[:,1]<=max_y))
+		selected_points = np.intersect1d(within_x, within_y)
+		# print selected_points
+		if len(selected_points)>0:
+			# Error. You are taking the indices based on selected_points and not all the values
+			p = np.argmin(np_pointcloud[selected_points,2])
+			point = np_pointcloud[selected_points[p], :]
+			A[row_grid_num, col_grid_num, :] = point
+			# print p
+		else:
+
+			# Find clostest point to the center of the cell 
+			# print 'center of cell'
+			p_center = np.array([min_x+cell_size/2, min_y+cell_size/2])
+			# print p_center
+			nn = kdt.query(p_center, k=1)
+			# print 'nn; ', nn
+			interp_p = np_pointcloud[nn[1],:]
+			# print 'interpolated: ', interp_p
+			A[row_grid_num, col_grid_num,:] = interp_p
+
+
+		# A[row_grid_num, col_grid_num,:] = np_pointcloud[selected_points,:]
+		
+		# print rows
+
+
+
+
+
+sys.exit()
 
 #Create a copy of the original file
 pointcloud_copy = np.copy(np_pointcloud)
